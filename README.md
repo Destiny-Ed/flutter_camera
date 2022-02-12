@@ -6,7 +6,9 @@ A Flutter plugin for iOS and Android allowing access to the device cameras and r
 
 *Note*: This plugin is still under development, and some APIs might not be available yet. We are working on a refactor which can be followed here: [issue](https://github.com/flutter/flutter/issues/31225)
 
-This plugin fully depends on flutter [camera](https://pub.dev/packages/camera) plugin to provide access to camera.
+This package fully depends on flutter [camera](https://pub.dev/packages/camera) plugin to provide access to camera.
+
+It only supports Android and IOS for now
 
 ## Features
 
