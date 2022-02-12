@@ -79,6 +79,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
 
   void captureImage() {
     controller!.takePicture().then((value) {
+      Navigator.pop(context);
       widget.onImageCaptured!(value);
     });
   }
@@ -244,6 +245,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
                     } else {
                       ///Stop video recording
                       controller!.stopVideoRecording().then((value) {
+                        Navigator.pop(context);
                         widget.onVideoRecorded!(value);
                       });
                       _isRecording = false;
