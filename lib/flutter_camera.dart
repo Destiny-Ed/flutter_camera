@@ -95,6 +95,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
       children: [
         SizedBox(
           height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
           child: CameraPreview(
             controller!,
           ),
@@ -174,6 +175,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
       children: [
         SizedBox(
           height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
           child: CameraPreview(
             controller!,
           ),

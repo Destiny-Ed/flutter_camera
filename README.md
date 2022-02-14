@@ -88,6 +88,7 @@ class _CameraPageState extends State<CameraPage> {
       onVideoRecorded: (value) {
         final path = value.path;
         print('::::::::::::::::::::::::;; dkdkkd $path');
+        ///Show video preview .mp4
       },
     );
     // return Container();
