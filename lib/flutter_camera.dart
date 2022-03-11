@@ -6,7 +6,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 class FlutterCamera extends StatefulWidget {
-  // final List<CameraDescription>? cameras;
   final Color? color;
   final Color? iconColor;
   Function(XFile)? onImageCaptured;
@@ -33,15 +32,18 @@ class _FlutterCameraState extends State<FlutterCamera> {
   void initState() {
     super.initState();
     initCamera().then((_) {
+      ///initialize camera and choose the back camera as the initial camera in use.
       setCamera(0);
     });
   }
 
+  /// calls [availableCameras()] which returns a list<CameraDescription>.
   Future initCamera() async {
     cameras = await availableCameras();
     setState(() {});
   }
 
+  /// chooses the camera to use, where the front camera has index = 1, and the rear camera has index = 0
   void setCamera(int index) {
     controller = CameraController(cameras![index], ResolutionPreset.max);
     controller!.initialize().then((_) {
@@ -52,6 +54,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
     });
   }
 
+  /// removes the camera controller from memory after use.
   @override
   void dispose() {
     controller?.dispose();
@@ -70,12 +73,16 @@ class _FlutterCameraState extends State<FlutterCamera> {
       return Container();
     }
     return Scaffold(
+      /// Performs the actual switch with an animation when _cameraView is toggled
       body: AnimatedSwitcher(
         duration: widget.animationDuration!,
         child: _cameraView == true ? cameraView() : videoView(),
       ),
     );
   }
+
+  /// Take a picture
+  /// The picture is returned as an XFile.
 
   void captureImage() {
     controller!.takePicture().then((value) {
@@ -84,6 +91,8 @@ class _FlutterCameraState extends State<FlutterCamera> {
     });
   }
 
+  /// Start a video recording.
+  /// The video is returned as an XFile after recording is stopped.
   void setVideo() {
     controller!.startVideoRecording();
   }
@@ -93,6 +102,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
     return Stack(
       key: const ValueKey(0),
       children: [
+        /// Ensures the camera preview covers the screen
         SizedBox(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
@@ -101,21 +111,13 @@ class _FlutterCameraState extends State<FlutterCamera> {
           ),
         ),
 
-        ///Side controlls
+        ///Side controls
         Positioned(
             top: 40,
             right: 0,
             child: Column(
               children: [
-                IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(
-                      Icons.clear,
-                      color: widget.iconColor,
-                      size: 30,
-                    )),
+                closeCameraWidget(),
                 cameraSwitcherWidget(),
                 flashToggleWidget()
               ],
@@ -130,34 +132,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
             padding: const EdgeInsets.all(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    captureImage();
-                  },
-                  icon: Icon(
-                    Icons.camera,
-                    color: widget.iconColor,
-                    size: 50,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _cameraView = false;
-                    });
-                  },
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(top: 20.0, left: 10, right: 10),
-                    child: CircleAvatar(
-                      backgroundColor: widget.color,
-                      child: const Icon(Icons.video_call),
-                      radius: 13,
-                    ),
-                  ),
-                )
-              ],
+              children: [captureImageButton(), switchToVideoButton()],
             ),
           ),
         )
@@ -191,7 +166,6 @@ class _FlutterCameraState extends State<FlutterCamera> {
               height: 100,
               child: Row(
                 children: [
-                  ///Front Camera toggle
                   cameraSwitcherWidget(),
                   Expanded(
                     child: Container(
@@ -204,8 +178,6 @@ class _FlutterCameraState extends State<FlutterCamera> {
                       ),
                     ),
                   ),
-
-                  ///Flash toggle
                   flashToggleWidget()
                 ],
               ),
@@ -221,71 +193,15 @@ class _FlutterCameraState extends State<FlutterCamera> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      ///Show camera view
-                      _cameraView = true;
-                    });
-                  },
-                  icon: Icon(
-                    Icons.camera_alt,
-                    color: widget.iconColor,
-                    size: 30,
-                  ),
-                ),
+                switchToPictureButton(),
                 const SizedBox(
                   width: 0.1,
                 ),
-                IconButton(
-                  onPressed: () {
-                    //Start and stop video
-                    if (_isRecording == false) {
-                      ///Start
-                      controller!.startVideoRecording();
-                      _isRecording = true;
-                    } else {
-                      ///Stop video recording
-                      controller!.stopVideoRecording().then((value) {
-                        Navigator.pop(context);
-                        widget.onVideoRecorded!(value);
-                      });
-                      _isRecording = false;
-                    }
-                    setState(() {});
-                  },
-                  icon: Icon(
-                    Icons.camera,
-                    color: widget.iconColor,
-                    size: 50,
-                  ),
-                ),
+                stopAndStartVideoButton(),
                 const SizedBox(
                   width: 15,
                 ),
-                IconButton(
-                  onPressed: () {
-                    //pause and resume video
-                    if (_isRecording == true) {
-                      //pause
-                      if (_isPaused == true) {
-                        ///resume
-                        controller!.resumeVideoRecording();
-                        _isPaused = false;
-                      } else {
-                        ///resume
-                        controller!.pauseVideoRecording();
-                        _isPaused = true;
-                      }
-                    }
-                    setState(() {});
-                  },
-                  icon: Icon(
-                    _isPaused == false ? Icons.pause_circle : Icons.play_circle,
-                    color: widget.iconColor,
-                    size: 30,
-                  ),
-                ),
+                pauseAndResumeVideoButton(),
               ],
             ),
           ),
@@ -294,6 +210,92 @@ class _FlutterCameraState extends State<FlutterCamera> {
     );
   }
 
+  /// button to switch from video mode to picture mode
+  IconButton switchToPictureButton() {
+    return IconButton(
+      onPressed: () {
+        setState(() {
+          ///Show camera view
+          _cameraView = true;
+        });
+      },
+      icon: Icon(
+        Icons.camera_alt,
+        color: widget.iconColor,
+        size: 30,
+      ),
+    );
+  }
+
+  /// button to stop and start video
+  Widget stopAndStartVideoButton() {
+    return IconButton(
+      onPressed: () {
+        //Start and stop video
+        if (_isRecording == false) {
+          ///Start
+          controller!.startVideoRecording();
+          _isRecording = true;
+        } else {
+          ///Stop video recording
+          controller!.stopVideoRecording().then((value) {
+            Navigator.pop(context);
+            widget.onVideoRecorded!(value);
+          });
+          _isRecording = false;
+        }
+        setState(() {});
+      },
+      icon: Icon(
+        Icons.camera,
+        color: widget.iconColor,
+        size: 50,
+      ),
+    );
+  }
+
+  ///button to pause and resume video
+  IconButton pauseAndResumeVideoButton() {
+    return IconButton(
+      onPressed: () {
+        //pause and resume video
+        if (_isRecording == true) {
+          //pause
+          if (_isPaused == true) {
+            ///resume
+            controller!.resumeVideoRecording();
+            _isPaused = false;
+          } else {
+            ///resume
+            controller!.pauseVideoRecording();
+            _isPaused = true;
+          }
+        }
+        setState(() {});
+      },
+      icon: Icon(
+        _isPaused == false ? Icons.pause_circle : Icons.play_circle,
+        color: widget.iconColor,
+        size: 30,
+      ),
+    );
+  }
+
+  /// button to close the camera view
+  Widget closeCameraWidget() {
+    return IconButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      icon: Icon(
+        Icons.clear,
+        color: widget.iconColor,
+        size: 30,
+      ),
+    );
+  }
+
+  /// button to toggle the flash
   Widget flashToggleWidget() {
     return IconButton(
       onPressed: () {
@@ -311,6 +313,7 @@ class _FlutterCameraState extends State<FlutterCamera> {
     );
   }
 
+  /// button to switch between front and rear cameras
   Widget cameraSwitcherWidget() {
     return IconButton(
       onPressed: () {
@@ -325,6 +328,39 @@ class _FlutterCameraState extends State<FlutterCamera> {
       },
       icon:
           Icon(Icons.change_circle_outlined, color: widget.iconColor, size: 30),
+    );
+  }
+
+  /// Button to switch from picture mode to video mode
+  Widget switchToVideoButton() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _cameraView = false;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(top: 20.0, left: 10, right: 10),
+        child: CircleAvatar(
+          backgroundColor: widget.color,
+          child: const Icon(Icons.video_call),
+          radius: 13,
+        ),
+      ),
+    );
+  }
+
+  /// Button to capture image
+  Widget captureImageButton() {
+    return IconButton(
+      onPressed: () {
+        captureImage();
+      },
+      icon: Icon(
+        Icons.camera,
+        color: widget.iconColor,
+        size: 50,
+      ),
     );
   }
 }
