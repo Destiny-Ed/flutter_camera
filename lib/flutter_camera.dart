@@ -4,6 +4,7 @@ library flutter_camera;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class FlutterCamera extends StatefulWidget {
   final Color? color;
@@ -28,8 +29,21 @@ class _FlutterCameraState extends State<FlutterCamera> {
 
   CameraController? controller;
 
+  bool volumeControl(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.audioVolumeUp) {
+        captureImage();
+      }
+      if (event.logicalKey == LogicalKeyboardKey.audioVolumeDown) {
+        captureImage();
+      }
+    }
+    return true;
+  }
+
   @override
   void initState() {
+    HardwareKeyboard.instance.addHandler(volumeControl);
     super.initState();
     initCamera().then((_) {
       ///initialize camera and choose the back camera as the initial camera in use.
