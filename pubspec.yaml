@@ -1,16 +1,16 @@
 name: flutter_camera
 description: A Flutter plugin for iOS and Android allowing access to the device cameras and recording of videos.
-version: 0.1.1
+version: 1.0.0
 homepage: https://github.com/Destiny-Ed/flutter_camera
 
 environment:
-  sdk: ">=2.14.4 <3.0.0"
+  sdk: ">=2.14.4 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.9.4+11
+  camera: ^0.10.5+3
   
 
 dev_dependencies:
